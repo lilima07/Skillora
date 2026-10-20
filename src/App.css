@@ -2717,3 +2717,71 @@ body {
 .reminder-card p:first-of-type {
   color: #123b46 !important;
 }
+.pricing-page {
+  min-height: 80vh;
+  padding: 32px 5% 64px;
+}
+
+.pricing-page > .button-outline {
+  margin-bottom: 24px;
+}
+
+/* Current plan card */
+.selected-plan-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px;
+  margin: 24px 0;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  box-shadow: 0 5px 18px rgba(15, 23, 42, 0.05);
+}
+
+.selected-plan-info .section-kicker {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.selected-plan-info h2 {
+  margin: 0 0 8px;
+  color: #172554;
+  font-size: 25px;
+}
+
+.selected-plan-info p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.selected-plan-actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.selected-plan-status {
+  display: inline-block;
+  padding: 8px 13px;
+  border-radius: 20px;
+  background: #dcfce7;
+  color: #166534;
+  font-size: 13px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+  .selected-plan-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .selected-plan-actions {
+    width: 100%;
+  }
+}

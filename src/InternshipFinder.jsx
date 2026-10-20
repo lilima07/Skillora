@@ -9,13 +9,17 @@ function cleanResults(items) {
 
   return (Array.isArray(items) ? items : []).filter((item) => {
     try {
+      if (!item?.url) return false;
+
       const url = new URL(item.url);
 
       if (!["http:", "https:"].includes(url.protocol)) {
         return false;
       }
 
-      const normalized = url.href.split("#")[0].replace(/\/+$/, "");
+      const normalized = url.href
+        .split("#")[0]
+        .replace(/\/+$/, "");
 
       if (seen.has(normalized)) return false;
 
@@ -68,30 +72,38 @@ function InternshipFinder({ onBack }) {
         }
       );
 
-      const data = await response.json().catch(() => ({}));
+      const data = await response.json().catch(() => null);
 
       if (!response.ok) {
         throw new Error(
-          data.error || "Unable to find internships right now."
+          data?.error ||
+            `Internship service returned an error (${response.status}).`
+        );
+      }
+
+      if (!data || !Array.isArray(data.results)) {
+        throw new Error(
+          "The internship service returned an unexpected response. Please check the backend API."
         );
       }
 
       const results = cleanResults(data.results);
 
       setInternships(results);
-      setProvider(data.provider || "TinyFish Search");
+      setProvider(data.provider || "External search");
 
       if (results.length === 0) {
         setError(
-          "No listings were found. Try another role or location."
+          "No listings were returned for this search. Try a different role or location."
         );
       }
     } catch (err) {
       console.error("Internship search failed:", err);
 
       setError(
-        err.message ||
-          "Could not connect to the backend. Make sure your server is running."
+        err.message?.includes("Failed to fetch")
+          ? "Could not connect to the internship service. Check your internet connection and backend deployment."
+          : err.message || "Something went wrong. Please try again."
       );
     } finally {
       setLoading(false);
@@ -127,7 +139,7 @@ function InternshipFinder({ onBack }) {
             className="internship-live-dot"
             aria-hidden="true"
           />
-          Powered by TinyFish Search
+          Powered by internship search
         </div>
       </section>
 
@@ -164,24 +176,21 @@ function InternshipFinder({ onBack }) {
           type="submit"
           disabled={loading}
         >
-          {loading ? "Searching..." : "Find internships ↗️"}
+          {loading ? "Searching..." : "Find internships ↗"}
         </button>
       </form>
 
       <aside className="internship-trust-notice">
-        <span
-          className="trust-notice-icon"
-          aria-hidden="true"
-        >
+        <span className="trust-notice-icon" aria-hidden="true">
           🛡️
         </span>
 
         <div>
           <h3>Apply smart. Stay safe.</h3>
           <p>
-            Listings come from external web search results and
-            have not been individually verified by Skillora.
-            Check the original employer website before applying.
+            Listings come from external search results and have
+            not been individually verified by Skillora. Check
+            the original employer website before applying.
             Never pay a fee to secure an internship.
           </p>
         </div>
@@ -193,7 +202,6 @@ function InternshipFinder({ onBack }) {
             className="internship-spinner"
             aria-hidden="true"
           />
-
           <div>
             <strong>Searching for opportunities...</strong>
             <p>
@@ -276,7 +284,7 @@ function InternshipFinder({ onBack }) {
                       className="internship-source-icon"
                       aria-hidden="true"
                     >
-                      ↗️
+                      ↗
                     </span>
 
                     <span className="internship-status">
@@ -312,7 +320,7 @@ function InternshipFinder({ onBack }) {
                       rel="noopener noreferrer"
                     >
                       View original listing{" "}
-                      <span aria-hidden="true">↗️</span>
+                      <span aria-hidden="true">↗</span>
                     </a>
                   </div>
                 </article>
@@ -333,7 +341,7 @@ function InternshipFinder({ onBack }) {
         internships.length === 0 &&
         !searched && (
           <section className="internship-empty-state">
-            <span aria-hidden="true">✳️</span>
+            <span aria-hidden="true">✳</span>
 
             <h2>Your next opportunity starts here.</h2>
 

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import workerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
@@ -6,7 +5,7 @@ import "./ResumeAnalyzer.css";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
-const API_BASE = "";;
+const API_BASE = "https://skillora-s7ga.vercel.app";
 
 const sections = [
   { label: "Contact information", terms: ["@", "phone", "linkedin", "github"] },
@@ -18,39 +17,22 @@ const sections = [
 ];
 
 const knownSkills = [
-  "javascript",
-  "typescript",
-  "react",
-  "node.js",
-  "express",
-  "html",
-  "css",
-  "python",
-  "java",
-  "c++",
-  "sql",
-  "mongodb",
-  "mysql",
-  "git",
-  "github",
-  "docker",
-  "aws",
-  "machine learning",
-  "data analysis",
-  "excel",
-  "figma",
-  "ui/ux",
-  "next.js",
-  "rest api",
-  "django",
-  "flask",
-  "communication",
+  "javascript", "typescript", "react", "node.js", "express",
+  "html", "css", "python", "java", "c++", "sql", "mongodb",
+  "mysql", "git", "github", "docker", "aws", "machine learning",
+  "data analysis", "excel", "figma", "ui/ux", "next.js",
+  "rest api", "django", "flask", "communication", "c", "c#",
+  "php", "angular", "vue.js", "tailwind css", "bootstrap",
+  "firebase", "postgresql", "redis", "pandas", "numpy",
+  "scikit-learn", "tensorflow", "pytorch", "data structures",
+  "algorithms", "problem solving", "power bi", "tableau",
+  "kotlin", "swift", "canva",
 ];
 
 function extractSkills(text) {
   const normalized = text.toLowerCase();
 
-  return knownSkills.filter((skill) => {
+  return [...new Set(knownSkills)].filter((skill) => {
     const escaped = skill.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = new RegExp(
       `(^|[^a-z0-9+#.])${escaped}(?=$|[^a-z0-9+#.])`,
@@ -77,8 +59,7 @@ function analyzeResume(text) {
   if (wordCount >= 150) score += 10;
   if (wordCount >= 300) score += 10;
 
-  const hasMetrics =
-    /\d+%|\d+\s*(users|projects|clients|hours)/i.test(text);
+  const hasMetrics = /\d+%|\d+\s*(users|projects|clients|hours)/i.test(text);
 
   if (hasMetrics) score += 10;
 
@@ -128,12 +109,34 @@ function analyzeResume(text) {
 }
 
 function getInternshipList(data) {
+  if (Array.isArray(data)) return data;
   if (Array.isArray(data?.results)) return data.results;
   if (Array.isArray(data?.internships)) return data.internships;
   if (Array.isArray(data?.data)) return data.data;
-  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.data?.results)) return data.data.results;
 
   return [];
+}
+
+function getListingUrl(item) {
+  return (
+    item?.url ||
+    item?.applyUrl ||
+    item?.applicationUrl ||
+    item?.link ||
+    item?.jobUrl ||
+    ""
+  );
+}
+
+function getListingKey(item, index) {
+  const url = getListingUrl(item);
+
+  if (url) return url.toLowerCase();
+
+  return `${item.title || item.role || item.position || "internship"}-${
+    item.company || item.companyName || ""
+  }-${index}`.toLowerCase();
 }
 
 export default function ResumeAnalyzer({ onBack }) {
@@ -217,6 +220,7 @@ export default function ResumeAnalyzer({ onBack }) {
 
       setReport(analyzeResume(fullText));
     } catch (err) {
+      console.error("Resume analysis error:", err);
       setError(err?.message || "Could not read this PDF.");
     } finally {
       setLoading(false);
@@ -224,11 +228,17 @@ export default function ResumeAnalyzer({ onBack }) {
   }
 
   async function handleFindInternships() {
-    if (!report) return;
+    if (!report) {
+      setInternshipError("Please analyze your resume first.");
+      return;
+    }
 
-    if (report.skills.length === 0) {
+    const skills = (report.skills || []).filter(Boolean);
+
+    if (skills.length === 0) {
+      setInternships([]);
       setInternshipError(
-        "No supported skills were detected. Add technical skills to your resume or search manually."
+        "No supported skills were detected. Add skills such as React, JavaScript, Python, or SQL to your resume, or try manual internship search."
       );
       return;
     }
@@ -238,36 +248,64 @@ export default function ResumeAnalyzer({ onBack }) {
     setInternships([]);
 
     try {
-      const params = new URLSearchParams({
-        role: `${report.skills.join(", ")} internship`,
-        location: "India",
-      });
+      const selectedSkills = skills.slice(0, 3);
 
-      const response = await fetch(
-        `${API_BASE}/api/internships?${params.toString()}`
+      const responses = await Promise.all(
+        selectedSkills.map(async (skill) => {
+          const params = new URLSearchParams({
+            role: `${skill} internship`,
+            location: "India",
+          });
+
+          const response = await fetch(
+            `${API_BASE}/api/internships?${params.toString()}`
+          );
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            throw new Error(
+              data.error || `Internship search failed (${response.status}).`
+            );
+          }
+
+          return getInternshipList(data);
+        })
       );
 
-      const data = await response.json().catch(() => ({}));
+      const combined = responses.flat().filter(
+        (item) => item && typeof item === "object"
+      );
 
-      if (!response.ok) {
-        throw new Error(
-          data.error || `Internship search failed (${response.status}).`
-        );
-      }
+      const uniqueMap = new Map();
 
-      const results = getInternshipList(data);
+      combined.forEach((item, index) => {
+        const key = getListingKey(item, index);
+
+        if (!uniqueMap.has(key)) {
+          uniqueMap.set(key, {
+            ...item,
+            url: getListingUrl(item),
+          });
+        }
+      });
+
+      const results = Array.from(uniqueMap.values());
 
       if (results.length === 0) {
-        throw new Error(
-          "No internship results were returned. Try different skills."
+        setInternshipError(
+          "The internship server did not return any listings for your skills. The resume was analyzed successfully, but the server's search results are empty. Please try again later."
         );
+        return;
       }
 
       setInternships(results);
     } catch (err) {
+      console.error("Internship search error:", err);
+
       setInternshipError(
         err?.message ||
-          "Could not connect to the internship server. Check that your backend is running."
+          "Could not connect to the internship server. Please try again."
       );
     } finally {
       setSearching(false);
@@ -282,6 +320,7 @@ export default function ResumeAnalyzer({ onBack }) {
     setInternshipError("");
 
     const input = document.getElementById("resume-file-input");
+
     if (input) input.value = "";
   }
 
@@ -337,7 +376,11 @@ export default function ResumeAnalyzer({ onBack }) {
               <p>{(file.size / 1024).toFixed(0)} KB</p>
             </div>
 
-            <button onClick={resetAnalyzer} aria-label="Remove selected file">
+            <button
+              type="button"
+              onClick={resetAnalyzer}
+              aria-label="Remove selected file"
+            >
               ×
             </button>
           </div>
@@ -346,6 +389,7 @@ export default function ResumeAnalyzer({ onBack }) {
         {error && <p className="resume-error">{error}</p>}
 
         <button
+          type="button"
           className="resume-primary-button"
           onClick={handleAnalyze}
           disabled={!file || loading}
@@ -353,9 +397,7 @@ export default function ResumeAnalyzer({ onBack }) {
           {loading ? "Analyzing resume..." : "Analyze my resume ↗"}
         </button>
 
-        <p className="resume-privacy">
-          Resume analysis.
-        </p>
+        <p className="resume-privacy">Resume analysis.</p>
       </section>
 
       {report && (
@@ -465,6 +507,7 @@ export default function ResumeAnalyzer({ onBack }) {
             </p>
 
             <button
+              type="button"
               className="resume-primary-button"
               onClick={handleFindInternships}
               disabled={searching || report.skills.length === 0}
@@ -475,12 +518,14 @@ export default function ResumeAnalyzer({ onBack }) {
             </button>
 
             {internshipError && (
-              <p className="resume-error">{internshipError}</p>
+              <p className="resume-error" role="alert">
+                {internshipError}
+              </p>
             )}
 
             {internships.length > 0 && (
               <div className="resume-internship-list">
-                <h3>Search results</h3>
+                <h3>Search results ({internships.length})</h3>
 
                 {internships.map((item, index) => {
                   const title =
@@ -495,23 +540,20 @@ export default function ResumeAnalyzer({ onBack }) {
                     item.organization ||
                     "Company not specified";
 
-                  const url =
-                    item.url ||
-                    item.applyUrl ||
-                    item.applicationUrl ||
-                    item.link ||
-                    "";
+                  const url = getListingUrl(item);
 
                   const description =
-                    item.description || item.summary || item.snippet || "";
+                    item.description ||
+                    item.summary ||
+                    item.snippet ||
+                    "";
 
                   return (
                     <article
                       className="resume-internship-item"
-                      key={`${title}-${index}`}
+                      key={getListingKey(item, index)}
                     >
                       <h4>{title}</h4>
-
                       <p>{company}</p>
 
                       {description && <p>{description}</p>}
@@ -526,7 +568,7 @@ export default function ResumeAnalyzer({ onBack }) {
                         </a>
                       ) : (
                         <p>
-                          No valid listing URL was provided. Verify this
+                          No valid application link was provided. Verify the
                           opportunity before applying.
                         </p>
                       )}
@@ -538,6 +580,7 @@ export default function ResumeAnalyzer({ onBack }) {
           </article>
 
           <button
+            type="button"
             className="resume-secondary-button"
             onClick={resetAnalyzer}
           >

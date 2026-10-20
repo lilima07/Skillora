@@ -3,6 +3,7 @@ import { useState } from "react";
 import "./App.css";
 import ResumeAnalyzer from "./ResumeAnalyzer";
 import InternshipFinder from "./InternshipFinder";
+import RevenueModel from "./RevenueModel";
 
 const features = [
   {
@@ -28,24 +29,36 @@ const features = [
   },
 ];
 
-function App() {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("skilloraUser")) || null;
-    } catch {
-      return null;
-    }
-  });
+function getStoredUser() {
+  try {
+    return JSON.parse(localStorage.getItem("skilloraUser")) || null;
+  } catch {
+    return null;
+  }
+}
 
-  const [page, setPage] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("skilloraUser"))
-        ? "profile"
-        : "home";
-    } catch {
-      return "home";
-    }
-  });
+function getStoredPlan() {
+  try {
+    return (
+      localStorage.getItem("skilloraPlan") ||
+      localStorage.getItem("skilloraSelectedPlan") ||
+      ""
+    );
+  } catch {
+    return "";
+  }
+}
+
+function App() {
+  const [user, setUser] = useState(getStoredUser);
+
+  const [page, setPage] = useState(() =>
+    getStoredUser() ? "profile" : "home"
+  );
+
+  const [selectedPlan, setSelectedPlan] = useState(getStoredPlan);
+
+  const [pendingPage, setPendingPage] = useState("profile");
 
   const [form, setForm] = useState({
     name: "",
@@ -56,13 +69,52 @@ function App() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  // Navigate to a page, checking the selected plan first.
   function goTo(nextPage) {
     if (!user && !["home", "signup", "login"].includes(nextPage)) {
-      nextPage = "signup";
+      setPage("signup");
+      setError("");
+      return;
+    }
+
+    if (
+      user &&
+      ["resume", "internships"].includes(nextPage) &&
+      !["Freemium", "Skillora Pro"].includes(selectedPlan)
+    ) {
+      setPendingPage(nextPage);
+      setPage("pricing");
+      setError("");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
     }
 
     setPage(nextPage);
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  // Save the student's plan and update the dashboard.
+  function handlePlanSelection(plan) {
+    if (!["Freemium", "Skillora Pro"].includes(plan)) {
+      return;
+    }
+
+    try {
+      localStorage.setItem("skilloraPlan", plan);
+      localStorage.setItem("skilloraSelectedPlan", plan);
+      localStorage.setItem(
+        "skilloraPlanSelectedAt",
+        new Date().toISOString()
+      );
+    } catch {
+      // Continue for this browser session.
+    }
+
+    setSelectedPlan(plan);
+
+    // Return to the page the student wanted to open.
+    setPage(pendingPage);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -139,13 +191,14 @@ function App() {
       try {
         localStorage.setItem("skilloraUser", JSON.stringify(nextUser));
       } catch {
-        // Continue for this browser session.
+        // Continue in the current session.
       }
 
       setUser(nextUser);
       setForm({ name: "", email: "", password: "" });
       setShowPassword(false);
-      goTo("profile");
+      setPage("profile");
+      setError("");
       return;
     }
 
@@ -168,13 +221,14 @@ function App() {
     try {
       localStorage.setItem("skilloraUser", JSON.stringify(nextUser));
     } catch {
-      // Continue for this browser session.
+      // Continue in the current session.
     }
 
     setUser(nextUser);
     setForm({ name: "", email: "", password: "" });
     setShowPassword(false);
-    goTo("profile");
+    setPage("profile");
+    setError("");
   }
 
   function logout() {
@@ -187,7 +241,8 @@ function App() {
     setUser(null);
     setForm({ name: "", email: "", password: "" });
     setShowPassword(false);
-    goTo("home");
+    setPage("home");
+    setError("");
   }
 
   function SiteNavbar() {
@@ -211,14 +266,26 @@ function App() {
 
           {user ? (
             <>
-
-
               <button type="button" onClick={() => goTo("resume")}>
                 Resume Analyzer
               </button>
 
-              <button type="button" onClick={() => goTo("internships")}>
+              <button
+                type="button"
+                onClick={() => goTo("internships")}
+              >
                 Find Internships
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingPage("profile");
+                  setPage("pricing");
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }}
+              >
+                Pricing
               </button>
 
               <button
@@ -233,6 +300,7 @@ function App() {
             <>
               <a href="#features">Features</a>
               <a href="#how-it-works">How it works</a>
+              <a href="#revenue">Pricing</a>
               <a href="#about">About</a>
 
               <button type="button" onClick={() => goTo("login")}>
@@ -300,7 +368,6 @@ function App() {
                 <div className="hero-art-card">
                   <div className="resume-preview-top">
                     <span className="resume-preview-avatar">S</span>
-
                     <div className="resume-preview-lines">
                       <div className="art-line" />
                       <div className="art-line short" />
@@ -335,7 +402,6 @@ function App() {
 
                 <div className="floating-card floating-bottom">
                   <span className="floating-icon">↗</span>
-
                   <div>
                     <strong>One step at a time</strong>
                     <p>Your future starts here.</p>
@@ -351,7 +417,6 @@ function App() {
               <div className="section-heading">
                 <span className="section-kicker">WHAT YOU CAN DO</span>
                 <h2>A little support goes a long way.</h2>
-
                 <p>
                   Everything you need to take your next career step
                   with confidence.
@@ -371,6 +436,21 @@ function App() {
                 ))}
               </div>
             </section>
+
+            <div id="revenue">
+              <RevenueModel
+                onSelectPlan={(plan) => {
+                  if (!user) {
+                    setPendingPage("profile");
+                    setPage("signup");
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                    return;
+                  }
+
+                  handlePlanSelection(plan);
+                }}
+              />
+            </div>
 
             <section className="how-section" id="how-it-works">
               <span className="section-kicker">HOW IT WORKS</span>
@@ -405,7 +485,6 @@ function App() {
 
             <section className="about-strip" id="about">
               <div className="about-star">✳</div>
-
               <div>
                 <h2>Your potential is not a checklist.</h2>
                 <p>
@@ -431,9 +510,7 @@ function App() {
             >
               skillora<span>.</span>
             </button>
-
             <p>Helping students take their next career step.</p>
-
             <span>© {new Date().getFullYear()} Skillora</span>
           </footer>
         </>
@@ -453,7 +530,6 @@ function App() {
 
             <div className="auth-art-content">
               <span className="section-kicker">YOUR NEXT CHAPTER</span>
-
               <h1>
                 Big dreams.
                 <br />
@@ -461,7 +537,6 @@ function App() {
                 <br />
                 Real progress.
               </h1>
-
               <p>
                 Make room for your potential. Your career journey starts
                 with one simple step.
@@ -507,7 +582,6 @@ function App() {
                 {page === "signup" && (
                   <label>
                     Your name
-
                     <input
                       name="name"
                       value={form.name}
@@ -521,7 +595,6 @@ function App() {
 
                 <label>
                   Email address
-
                   <input
                     name="email"
                     type="email"
@@ -535,7 +608,6 @@ function App() {
 
                 <label>
                   Password
-
                   <div className="password-field">
                     <input
                       name="password"
@@ -594,6 +666,25 @@ function App() {
         </main>
       )}
 
+      {/* PRICING PAGE */}
+      {page === "pricing" && user && (
+        <>
+          <SiteNavbar />
+
+          <main className="pricing-page">
+            <button
+              type="button"
+              className="button-outline"
+              onClick={() => goTo("profile")}
+            >
+              ← Back to dashboard
+            </button>
+
+            <RevenueModel onSelectPlan={handlePlanSelection} />
+          </main>
+        </>
+      )}
+
       {/* STUDENT DASHBOARD */}
       {page === "profile" && user && (
         <>
@@ -605,11 +696,9 @@ function App() {
                 <span className="section-kicker">
                   YOUR CAREER, YOUR FUTURE
                 </span>
-
                 <h1>
                   Hey, {user.name?.split(" ")[0] || "there"}! <span>✳</span>
                 </h1>
-
                 <p>
                   Every big career starts with a small step. Let's make
                   yours count.
@@ -621,11 +710,50 @@ function App() {
               </div>
             </section>
 
+            {/* CURRENT PLAN CARD */}
+            <section className="selected-plan-card">
+              <div className="selected-plan-info">
+                <span className="section-kicker">
+                  YOUR CURRENT PLAN
+                </span>
+
+                <h2>{selectedPlan || "No plan selected"}</h2>
+
+                <p>
+                  {selectedPlan === "Skillora Pro"
+                    ? "₹99/month · Pro membership"
+                    : selectedPlan === "Freemium"
+                    ? "Free forever · Freemium membership"
+                    : "Choose a plan to get started."}
+                </p>
+              </div>
+
+              <div className="selected-plan-actions">
+                <span className="selected-plan-status">
+                  {selectedPlan ? "✓ Selected" : "Not selected"}
+                </span>
+
+                <button
+                  type="button"
+                  className="button-outline"
+                  onClick={() => {
+                    setPendingPage("profile");
+                    setPage("pricing");
+                    window.scrollTo({
+                      top: 0,
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Change plan ↗
+                </button>
+              </div>
+            </section>
+
             <section className="dashboard-banner">
               <div className="banner-content">
                 <span className="banner-label">YOUR NEXT STEP</span>
                 <h2>Your future self will thank you.</h2>
-
                 <p>
                   Start with your resume, discover new opportunities, and
                   find the roles that fit your skills.
@@ -695,7 +823,6 @@ function App() {
                   <div className="tool-icon tool-mint">✳</div>
                   <span className="tool-label">STEP 01</span>
                   <h3>Resume analyzer</h3>
-
                   <p>
                     Review your resume, highlight your strengths, and
                     discover areas to improve.
@@ -714,7 +841,6 @@ function App() {
                   <div className="tool-icon tool-pink">⌕</div>
                   <span className="tool-label">STEP 02</span>
                   <h3>Find internships</h3>
-
                   <p>
                     Explore internships and entry-level roles that match
                     your interests and goals.
@@ -759,13 +885,10 @@ function App() {
 
               <div className="dashboard-tip">
                 <span className="tip-symbol">✦</span>
-
                 <span className="section-kicker">
                   A LITTLE REMINDER
                 </span>
-
                 <h2>You don't need to have it all figured out.</h2>
-
                 <p>
                   Keep learning, keep exploring, and take one step at a
                   time. Your journey is just getting started.
@@ -782,9 +905,7 @@ function App() {
             >
               skillora<span>.</span>
             </button>
-
             <p>Helping students take their next career step.</p>
-
             <span>© {new Date().getFullYear()} Skillora</span>
           </footer>
         </>
