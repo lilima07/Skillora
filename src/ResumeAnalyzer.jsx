@@ -6,7 +6,7 @@ import "./ResumeAnalyzer.css";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = "";;
 
 const sections = [
   { label: "Contact information", terms: ["@", "phone", "linkedin", "github"] },
