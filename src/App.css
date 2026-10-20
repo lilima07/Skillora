@@ -11,8 +11,8 @@
   --yellow: #fff7df;
   --paper: #fffdf9;
   --ink: #080b14;
-  --text: #52696b;
-  --muted: #819496;
+  --text: #40565a;
+  --muted: #596f73;
   --border: #dce9e5;
   --shadow: 0 18px 45px rgba(4, 85, 91, 0.09);
 }
@@ -280,7 +280,7 @@ p {
 
 .hero-content .section-kicker {
   margin-bottom: 18px;
-  color:#163f46;
+  color:  #ffffff;
   font-size: 11px;
   letter-spacing: 2px;
 }
