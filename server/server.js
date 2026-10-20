@@ -12,7 +12,6 @@ const TINYFISH_URL = "https://api.search.tinyfish.ai";
 app.use(cors());
 app.use(express.json());
 
-// Backend health check
 app.get("/", (req, res) => {
   res.json({
     message: "Skillora backend is running!",
@@ -20,7 +19,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Validate and normalize listing URLs
 function normalizeUrl(value) {
   try {
     const raw = String(value || "").trim();
@@ -40,7 +38,6 @@ function normalizeUrl(value) {
   }
 }
 
-// Convert country names to country codes
 function getCountryCode(location) {
   const countries = {
     india: "IN",
@@ -59,14 +56,13 @@ function getCountryCode(location) {
   return countries[String(location).trim().toLowerCase()] || "IN";
 }
 
-// Search internship listings
 app.get("/api/internships", async (req, res) => {
   try {
     const apiKey = process.env.TINYFISH_API_KEY;
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "TinyFish API key is missing. Check server/.env.",
+        error: "TinyFish API key is missing.",
       });
     }
 
@@ -76,9 +72,7 @@ app.get("/api/internships", async (req, res) => {
       .trim()
       .slice(0, 100);
 
-    const location = String(
-      req.query.location || "India"
-    )
+    const location = String(req.query.location || "India")
       .trim()
       .slice(0, 80);
 
@@ -95,10 +89,7 @@ app.get("/api/internships", async (req, res) => {
     const searchUrl = new URL(TINYFISH_URL);
 
     searchUrl.searchParams.set("query", query);
-    searchUrl.searchParams.set(
-      "location",
-      getCountryCode(location)
-    );
+    searchUrl.searchParams.set("location", getCountryCode(location));
     searchUrl.searchParams.set("language", "en");
 
     const response = await fetch(searchUrl, {
@@ -168,11 +159,16 @@ app.get("/api/internships", async (req, res) => {
       error:
         error.name === "TimeoutError"
           ? "The search took too long. Please try again."
-          : "Could not connect to TinyFish. Check your internet connection and backend.",
+          : "Could not connect to TinyFish. Please try again.",
     });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`Skillora backend running at http://localhost:${PORT}`);
-});
+export default app;
+
+
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Skillora backend running at http://localhost:${PORT}`);
+  });
+}
