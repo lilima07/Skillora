@@ -2631,25 +2631,77 @@ body {
 }
 
 
+
+/* ===== Skillora text visibility fix ===== */
+
+/* Homepage hero: white text on teal background */
 .hero-content h1 {
-  color: #123b46 !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
   opacity: 1 !important;
+  visibility: visible !important;
 }
 
 .hero-content h1 span {
-  color: #0796a3 !important;
-  opacity: 1 !important;
+  color: #ffb8ca !important;
+  -webkit-text-fill-color: #ffb8ca !important;
 }
 
 .hero-content>p {
-  color: #526c76 !important;
+  color: #e0f5f2 !important;
+  -webkit-text-fill-color: #e0f5f2 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Login and signup page */
+.auth-art-content h1 {
+  color: #123b46 !important;
+  -webkit-text-fill-color: #123b46 !important;
   opacity: 1 !important;
 }
 
+.auth-art-content h1 span {
+  color: #0796a3 !important;
+  -webkit-text-fill-color: #0796a3 !important;
+}
 
-.internship-empty-state,
-.internship-hero,
-.auth-art-content,
-.hero-content {
-  visibility: visible;
+.auth-art-content p {
+  color: #52717a !important;
+  -webkit-text-fill-color: #52717a !important;
+  opacity: 1 !important;
+}
+
+/* Section headings */
+.section-heading h2,
+.how-section h2,
+.dashboard-section-heading h2,
+.internship-hero h1,
+.internship-results-heading h2,
+.internship-empty-state h2 {
+  color: #123b46 !important;
+  -webkit-text-fill-color: #123b46 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.internship-hero h1 span {
+  color: #0796a3 !important;
+  -webkit-text-fill-color: #0796a3 !important;
+}
+
+.internship-hero>p,
+.internship-empty-state p {
+  color: #58717a !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Keep dashboard headings readable */
+.dashboard-welcome h1,
+.dashboard-stat h3,
+.dashboard-tool h3 {
+  color: #163f46 !important;
+  -webkit-text-fill-color: #163f46 !important;
+  opacity: 1 !important;
 }
