@@ -124,10 +124,15 @@
     font-weight: 800;
     line-height: 1.12;
     letter-spacing: -2.5px;
+    color: #080b14 !important;
+    -webkit-text-fill-color: #080b14 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .resume-heading h1 span {
-    color: var(--resume-pink);
+    color: #ff6685 !important;
+    -webkit-text-fill-color: #ff6685 !important;
 }
 
 .resume-heading>p {
@@ -171,6 +176,8 @@
     font-size: 25px;
     font-weight: 800;
     letter-spacing: -0.6px;
+    color: #080b14 !important;
+    -webkit-text-fill-color: #080b14 !important;
 }
 
 .resume-upload-card>p {
@@ -972,4 +979,21 @@
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+
+.resume-page h2,
+.resume-page h3,
+.resume-page p,
+.resume-page label,
+.resume-page strong {
+    opacity: 1;
+    visibility: visible;
+}
+
+.resume-upload-card h2,
+.resume-report h2,
+.resume-report h3 {
+    color: #080b14 !important;
+    -webkit-text-fill-color: #080b14 !important;
 }

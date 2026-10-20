@@ -280,7 +280,7 @@ p {
 
 .hero-content .section-kicker {
   margin-bottom: 18px;
-  color:  #ffffff;
+  color: #ffffff;
   font-size: 11px;
   letter-spacing: 2px;
 }
@@ -2496,6 +2496,7 @@ p {
     max-width: 100%;
   }
 }
+
 /* Skillora: enforce readable text on light pages */
 body {
   color: #080b14;
@@ -2511,7 +2512,8 @@ body {
 .dashboard-tool h3,
 .internship-hero h1,
 .internship-results-heading h2 {
-  color: #163f46;
-  opacity: 1;
-  visibility: visible;
+  color: #163f46 !important;
+  -webkit-text-fill-color: #163f46 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }
