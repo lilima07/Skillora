@@ -2496,3 +2496,22 @@ p {
     max-width: 100%;
   }
 }
+/* Skillora: enforce readable text on light pages */
+body {
+  color: #080b14;
+}
+
+.app {
+  color: #080b14;
+}
+
+.dashboard-welcome h1,
+.dashboard-section-heading h2,
+.dashboard-stat h3,
+.dashboard-tool h3,
+.internship-hero h1,
+.internship-results-heading h2 {
+  color: #163f46;
+  opacity: 1;
+  visibility: visible;
+}
