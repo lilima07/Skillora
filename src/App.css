@@ -234,6 +234,7 @@ p {
   font-weight: 800;
   letter-spacing: 2.5px;
   line-height: 1.7;
+  color: #163f46;
 }
 
 /* =========================
@@ -279,7 +280,7 @@ p {
 
 .hero-content .section-kicker {
   margin-bottom: 18px;
-  color: #bcece5;
+  color:#163f46;
   font-size: 11px;
   letter-spacing: 2px;
 }
