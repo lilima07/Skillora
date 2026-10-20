@@ -1,7 +1,8 @@
 
 import { useState } from "react";
+import "./App.css";
 
-const API_URL = "http://localhost:5000/api/internships";
+const API_URL = "https://skillora-s7ga.vercel.app/api/internships";
 
 function cleanResults(items) {
   const seen = new Set();
@@ -14,9 +15,7 @@ function cleanResults(items) {
         return false;
       }
 
-      const normalized = url.href
-        .split("#")[0]
-        .replace(/\/+$/, "");
+      const normalized = url.href.split("#")[0].replace(/\/+$/, "");
 
       if (seen.has(normalized)) return false;
 
@@ -38,7 +37,7 @@ function InternshipFinder({ onBack }) {
   const [provider, setProvider] = useState("");
 
   async function searchInternships(event) {
-    event?.preventDefault();
+    if (event) event.preventDefault();
 
     const searchRole = role.trim();
     const searchLocation = location.trim();
@@ -60,11 +59,14 @@ function InternshipFinder({ onBack }) {
         location: searchLocation,
       });
 
-      const response = await fetch(`${API_URL}?${params}`, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+      const response = await fetch(
+        `${API_URL}?${params.toString()}`,
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
 
       const data = await response.json().catch(() => ({}));
 
@@ -85,6 +87,8 @@ function InternshipFinder({ onBack }) {
         );
       }
     } catch (err) {
+      console.error("Internship search failed:", err);
+
       setError(
         err.message ||
           "Could not connect to the backend. Make sure your server is running."
@@ -160,12 +164,15 @@ function InternshipFinder({ onBack }) {
           type="submit"
           disabled={loading}
         >
-          {loading ? "Searching..." : "Find internships ↗"}
+          {loading ? "Searching..." : "Find internships ↗️"}
         </button>
       </form>
 
       <aside className="internship-trust-notice">
-        <span className="trust-notice-icon" aria-hidden="true">
+        <span
+          className="trust-notice-icon"
+          aria-hidden="true"
+        >
           🛡️
         </span>
 
@@ -269,7 +276,7 @@ function InternshipFinder({ onBack }) {
                       className="internship-source-icon"
                       aria-hidden="true"
                     >
-                      ↗
+                      ↗️
                     </span>
 
                     <span className="internship-status">
@@ -305,7 +312,7 @@ function InternshipFinder({ onBack }) {
                       rel="noopener noreferrer"
                     >
                       View original listing{" "}
-                      <span aria-hidden="true">↗</span>
+                      <span aria-hidden="true">↗️</span>
                     </a>
                   </div>
                 </article>
@@ -321,22 +328,28 @@ function InternshipFinder({ onBack }) {
         </section>
       )}
 
-      {!loading && !error && internships.length === 0 && !searched && (
-        <section className="internship-empty-state">
-          <span aria-hidden="true">✳</span>
+      {!loading &&
+        !error &&
+        internships.length === 0 &&
+        !searched && (
+          <section className="internship-empty-state">
+            <span aria-hidden="true">✳️</span>
 
-          <h2>Your next opportunity starts here.</h2>
+            <h2>Your next opportunity starts here.</h2>
 
-          <p>
-            Enter your preferred role and location to discover
-            internship listings.
-          </p>
+            <p>
+              Enter your preferred role and location to discover
+              internship listings.
+            </p>
 
-          <div className="internship-suggestions">
-            <span>Try searching:</span>
+            <div className="internship-suggestions">
+              <span>Try searching:</span>
 
-            {["Web Development", "Python", "Data Science"].map(
-              (suggestion) => (
+              {[
+                "Web Development",
+                "Python",
+                "Data Science",
+              ].map((suggestion) => (
                 <button
                   key={suggestion}
                   type="button"
@@ -345,11 +358,10 @@ function InternshipFinder({ onBack }) {
                 >
                   {suggestion}
                 </button>
-              )
-            )}
-          </div>
-        </section>
-      )}
+              ))}
+            </div>
+          </section>
+        )}
     </main>
   );
 }
