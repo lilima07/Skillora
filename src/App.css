@@ -2705,3 +2705,14 @@ body {
   -webkit-text-fill-color: #163f46 !important;
   opacity: 1 !important;
 }
+/* Fix: signup page heading */
+.hero-content h1 {
+  color: #123b46 !important;
+}
+
+/* Fix: reminder card heading */
+.reminder-card h2,
+.reminder-card h3,
+.reminder-card p:first-of-type {
+  color: #123b46 !important;
+}
