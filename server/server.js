@@ -7,9 +7,15 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 const TINYFISH_URL = "https://api.search.tinyfish.ai";
 
-app.use(cors());
+app.use(
+  cors({
+    origin: true,
+  })
+);
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
@@ -22,6 +28,7 @@ app.get("/", (req, res) => {
 function normalizeUrl(value) {
   try {
     const raw = String(value || "").trim();
+
     if (!raw) return null;
 
     const url = new URL(
@@ -62,13 +69,11 @@ app.get("/api/internships", async (req, res) => {
 
     if (!apiKey) {
       return res.status(500).json({
-        error: "TinyFish API key is missing.",
+        error: "TinyFish API key is missing in the backend environment.",
       });
     }
 
-    const role = String(
-      req.query.role || "software engineering"
-    )
+    const role = String(req.query.role || "software engineering")
       .trim()
       .slice(0, 100);
 
@@ -82,12 +87,9 @@ app.get("/api/internships", async (req, res) => {
       });
     }
 
-    const query =
-      `${role} internship for college students in ${location} ` +
-      `${new Date().getFullYear()} apply company careers`;
+    const query = `${role} internship for college students in ${location} ${new Date().getFullYear()} apply company careers`;
 
     const searchUrl = new URL(TINYFISH_URL);
-
     searchUrl.searchParams.set("query", query);
     searchUrl.searchParams.set("location", getCountryCode(location));
     searchUrl.searchParams.set("language", "en");
@@ -104,15 +106,19 @@ app.get("/api/internships", async (req, res) => {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      console.error("TinyFish status:", response.status);
+      console.error(
+        "TinyFish API error:",
+        response.status,
+        JSON.stringify(data)
+      );
 
       return res.status(502).json({
         error:
           response.status === 401 || response.status === 403
-            ? "TinyFish rejected the API key. Check your key."
+            ? "TinyFish rejected the API key. Check your backend environment variables."
             : response.status === 429
-              ? "TinyFish rate limit reached. Please try again later."
-              : "Internship search failed. Please try again.",
+              ? "Search limit reached. Please try again later."
+              : "The internship search provider returned an error.",
       });
     }
 
@@ -128,7 +134,7 @@ app.get("/api/internships", async (req, res) => {
 
         return {
           title: item.title || "Internship opportunity",
-          company: item.site_name || "External website",
+          company: item.site_name || new URL(url).hostname,
           url,
           snippet: item.snippet || "",
         };
@@ -153,22 +159,21 @@ app.get("/api/internships", async (req, res) => {
       results,
     });
   } catch (error) {
-    console.error("Internship search error:", error.message);
+    console.error("Internship search error:", error);
 
-    return res.status(500).json({
+    return res.status(error.name === "TimeoutError" ? 504 : 500).json({
       error:
         error.name === "TimeoutError"
           ? "The search took too long. Please try again."
-          : "Could not connect to TinyFish. Please try again.",
+          : "Could not connect to the internship search provider.",
     });
   }
 });
 
-export default app;
-
-
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
-    console.log(`Skillora backend running at http://localhost:${PORT}`);
+    console.log(`Skillora backend running on port ${PORT}`);
   });
 }
+
+export default app;
