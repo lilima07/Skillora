@@ -2104,9 +2104,6 @@ p {
   }
 }
 
-/* =========================
-   REDUCED MOTION ACCESSIBILITY
-========================= */
 
 @media (prefers-reduced-motion: reduce) {
 
@@ -2516,4 +2513,143 @@ body {
   -webkit-text-fill-color: #163f46 !important;
   opacity: 1 !important;
   visibility: visible !important;
+}
+
+/* =========================================
+   SKILLORA — FIX INVISIBLE TEXT
+   ========================================= */
+
+/* 1. Signup and login heading */
+.auth-art-content h1 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.auth-art-content h1 span {
+  color: #0796a3 !important;
+  opacity: 1 !important;
+}
+
+/* Signup/login supporting text */
+.auth-art-content p {
+  color: #52717a !important;
+  opacity: 1 !important;
+}
+
+/* 2. Homepage hero heading */
+.hero-content h1 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.hero-content h1 span {
+  color: #0796a3 !important;
+  opacity: 1 !important;
+}
+
+/* Homepage hero description */
+.hero-content>p {
+  color: #526c76 !important;
+  opacity: 1 !important;
+}
+
+/* 3. Make section headings readable */
+.section-heading h2,
+.how-section h2,
+.dashboard-section-heading h2 {
+  color: #123b46;
+  opacity: 1;
+}
+
+.internship-finder h1,
+.internship-finder h2,
+.internship-finder h3 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+
+.auth-art-content,
+.auth-art-content h1,
+.auth-art-content p,
+.hero-content,
+.hero-content h1,
+.hero-content p {
+  opacity: 1;
+}
+
+.internship-empty-state h2 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.internship-empty-state p {
+  color: #58717a !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.internship-suggestions>span {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.internship-suggestion {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.internship-hero h1 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.internship-hero h1 span {
+  color: #0796a3 !important;
+  opacity: 1 !important;
+}
+
+.internship-hero>p {
+  color: #58717a !important;
+  opacity: 1 !important;
+}
+
+.auth-art-content h1 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.auth-art-content h1 span {
+  color: #0796a3 !important;
+  opacity: 1 !important;
+}
+
+.auth-art-content p {
+  color: #58717a !important;
+  opacity: 1 !important;
+}
+
+
+.hero-content h1 {
+  color: #123b46 !important;
+  opacity: 1 !important;
+}
+
+.hero-content h1 span {
+  color: #0796a3 !important;
+  opacity: 1 !important;
+}
+
+.hero-content>p {
+  color: #526c76 !important;
+  opacity: 1 !important;
+}
+
+
+.internship-empty-state,
+.internship-hero,
+.auth-art-content,
+.hero-content {
+  visibility: visible;
 }
